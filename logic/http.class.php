@@ -17,6 +17,7 @@ class Http{
   const ROUTE_REFERRAL_DECODE = "referral_decode";
   const ROUTE_INSERT_ORDER = "ins_ord";
   const ROUTE_MOD_ORDER = "mod_ord";
+  const ROUTE_INS_AGENT = "ins_agent";
   private $endpoint = "";
 
   function __construct(){

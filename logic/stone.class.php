@@ -45,12 +45,13 @@ class StoneAPI{
         'cellulare' => $data['billing']['phone'],
         'agente_presentante' => $agent,
         'email' => $data['billing']['email'],
-        'codice_fiscale' => "",
+        'codice_fiscale' => array_key_exists("meta_data",$data) ? $data["meta_data"][0]->get_data()["value"] : "",
         'partita_iva' => $vat,
         'country' => $shipping['country']
       ];
 
       if(empty($customer)){
+        self::createAgent($params,$id_order);
         self::saveNewCustomer(
           $data['customer_id'],
           $params,
@@ -71,9 +72,25 @@ class StoneAPI{
    */
   public static function saveReferral(){
     if(isset($_GET['ref'])){
-		setcookie("referral",$_GET['ref'],strtotime("+1 year"),"/");
-		header("Location: ".str_replace("ref=".$_GET['ref'],"",$_SERVER['REQUEST_URI']));
-	}
+		  setcookie("referral",$_GET['ref'],strtotime("+1 year"),"/");
+		  header("Location: ".str_replace("ref=".$_GET['ref'],"",$_SERVER['REQUEST_URI']));
+    }
+  }
+  
+  /**
+   * Creates an agent if the kit bought is ID 520, 522, 524, 526
+   */
+  private static function createAgent($userParams,$id_order){
+    $order = wc_get_order($id_order);
+    $items = $order->get_items();
+    foreach ( $items as $index => $item ) {
+      $userParams['id_qualifica'] = $item->get_product_id();
+      if($userParams['id_qualifica']==520 || $userParams['id_qualifica']==522 || $userParams['id_qualifica']==524 || $userParams['id_qualifica']==526){
+        var_dump($userParams);
+        $response = (new Http())->getJSONResponse(Http::ROUTE_INS_AGENT,$userParams,true,true);
+        var_dump($response);
+      }
+    }
   }
 
   /**
