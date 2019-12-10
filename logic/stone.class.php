@@ -35,23 +35,24 @@ class StoneAPI{
 
       $params = [
         'login' => $data['billing']['email'],
-        'ragione_sociale' => $shipping['company'],
-        'cognome' => $shipping['last_name'],
-        'nome' => $shipping['first_name'],
-        'indirizzo' => $shipping['address_1'],
-        'cap' => $shipping['postcode'],
-        'citta' => $shipping['city'],
-        'provincia' => $shipping['state'],
+        'ragione_sociale' => $data['billing']['company'],
+        'cognome' => $data['billing']['last_name'],
+        'nome' => $data['billing']['first_name'],
+        'indirizzo' => $data['billing']['address_1'],
+        'cap' => $data['billing']['postcode'],
+        'citta' => $data['billing']['city'],
+        'provincia' => $data['billing']['state'],
         'cellulare' => $data['billing']['phone'],
         'agente_presentante' => $agent,
         'email' => $data['billing']['email'],
         'codice_fiscale' => array_key_exists("meta_data",$data) ? $data["meta_data"][0]->get_data()["value"] : "",
         'partita_iva' => $vat,
-        'country' => $shipping['country']
+        'country' => $data['billing']['country']
       ];
 
+      self::createAgent($params,$id_order);
+
       if(empty($customer)){
-        self::createAgent($params,$id_order);
         self::saveNewCustomer(
           $data['customer_id'],
           $params,
@@ -85,10 +86,11 @@ class StoneAPI{
     $items = $order->get_items();
     foreach ( $items as $index => $item ) {
       $userParams['id_qualifica'] = $item->get_product_id();
-      if($userParams['id_qualifica']==520 || $userParams['id_qualifica']==522 || $userParams['id_qualifica']==524 || $userParams['id_qualifica']==526){
-        var_dump($userParams);
+      $isKitConsultant = $userParams['id_qualifica']==520 || $userParams['id_qualifica']==522;
+      $isKitTeamBuilding = $userParams['id_qualifica']==524 || $userParams['id_qualifica']==526;
+      $userParams['id_qualifica'] = intval($isKitTeamBuilding);
+      if($isKitConsultant || $isKitTeamBuilding){
         $response = (new Http())->getJSONResponse(Http::ROUTE_INS_AGENT,$userParams,true,true);
-        var_dump($response);
       }
     }
   }
